@@ -14,9 +14,9 @@ class Google_sheet_handler:
         '''
         For the google sheet handler to be created the file containing the credentials has to be proved as well as name of the sheet where the data should be placed
 
-        credentials_file: The file where the credicals for accessing the sheet is defined
+        credentials_file: The file where the credentials for accessing the sheet is defined
 
-        google_sheet_name: The name of the woorkbook where the data should the read or written to
+        google_sheet_name: The name of the workbook where the data should the read or written to
         '''
         # Authenticate with credentials
         credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_file, self.scope)
@@ -26,7 +26,7 @@ class Google_sheet_handler:
 
     def write_hourly_data_sheet(self, data):
         ''' 
-        This will cause the data being given to write the data to the sheet specifcally the first sheet
+        This will cause the data being given to write the data to the sheet specifically the first sheet
 
         data: The data that should be placed in the google sheet
         '''
@@ -37,7 +37,7 @@ class Google_sheet_handler:
 
     def write_daily_data_sheet(self, data):
         ''' 
-        This will cause the data being given to write the data to the sheet specifcally the first sheet
+        This will cause the data being given to write the data to the sheet specifically the first sheet
 
         data: The data that should be placed in the google sheet
         '''
@@ -66,11 +66,10 @@ class Google_sheet_handler:
         for index,item in enumerate(data_list):
             if(index>1):
                 new_site = Site_Info(item[0],item[1], item[2])
-                new_site.set_wave_direction(item[3],item[4],item[5])
-                new_site.set_wave_height(item[6],item[7])
-                new_site.set_wave_period(item[8],item[9])
-                new_site.set_wind_direction(item[10],item[11],item[12])
-                new_site.set_wind_speed(item[13],item[14])
+                new_site.set_wave_height(item[3],item[4])
+                new_site.set_wave_period(item[5],item[6])
+                new_site.set_wind_direction(item[7],item[8],item[9])
+                new_site.set_wind_speed(item[10],item[11])
                 site_info_list.append(new_site)
 
         return site_info_list

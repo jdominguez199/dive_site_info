@@ -28,11 +28,11 @@ class Location_info:
     def convert_num_dir_to_simple_string_dir(self,degree):
         int_degree = int(degree)
         # This was made taking a circle spliting it 8 ways
-        wind_directions={"SW":[247,203], "W":[248,292],"NW":[293,337],"N":[22, 338], "NE":[23,67],"E":[68,112],"SE":[113,157], "S":[158,202]}
+        wind_directions={"NE":[247,203], "E":[248,292],"SE":[293,337],"S":[22, 338], "SW":[23,67],"W":[68,112],"NW":[113,157], "N":[158,202]}
         for key in wind_directions.keys():
             min_max_degree = wind_directions[key]
             # North needs a specal case it is a little weird since the range is 338 to 22
-            if key == "N":
+            if key == "S":
                 if(int_degree <= min_max_degree[0] and int_degree >= 0) or (int_degree >= min_max_degree[1] and int_degree <= 360):
                     return key
             else:
@@ -67,6 +67,7 @@ class Location_info:
         holding_data_frame=pd.DataFrame()
         # Process first location. Add a for-loop for multiple locations or weather models
         for response_index, response in enumerate(responses):
+            print("grabbing marine data")
             print(f"Coordinates: {response.Latitude()}°N {response.Longitude()}°E")
             print(f"Elevation: {response.Elevation()} m asl")
             print(f"Timezone: {response.Timezone()}{response.TimezoneAbbreviation()}")
@@ -101,10 +102,7 @@ class Location_info:
             hourly_data["wave_height_score"] = wave_height_score
             hourly_data["wave_direction"] = hourly_wave_direction
             hourly_data["wave_direction_str"] = [self.convert_num_dir_to_simple_string_dir(x) for x in hourly_data["wave_direction"]]
-            wave_direction_score=[]
-            for direction in hourly_data["wave_direction_str"]:
-                wave_direction_score.append(self.site_info_dicts[response_index].get_wave_direction_score(direction))
-            hourly_data["wave_direction_score"]=wave_direction_score
+            #wave direction score will be calculated once wind direction is gathered
             hourly_data["wave_period"] = hourly_wave_period
             wave_period_score=[]
             for period in hourly_data["wave_period"]:
@@ -114,7 +112,7 @@ class Location_info:
             min_wave_height= abs(min(hourly_data["sea_level_height_msl"]))
             hourly_data["sea_level_height_msl"] = [x + min_wave_height for x in hourly_data["sea_level_height_msl"]]
 
-            hourly_data = self.update_hourly_land_data(hourly_data)
+            hourly_data = self.update_hourly_land_data(hourly_data, response.Latitude(), response.Longitude())
             total_score=[]
             for index, period in enumerate(hourly_data["wave_period"]):
                 total_score.append(hourly_data["wave_period_score"][index] + hourly_data["wave_direction_score"][index]+hourly_data["wave_height_score"][index]+hourly_data["wind_speed_score"][index]+hourly_data["wind_direction_score"][index])
@@ -186,8 +184,7 @@ class Location_info:
                                     "wave_period(s)":[],\
                                     "wind_speed(kn)":[],\
                                     "wind_direction":[],\
-                                    "air temp(F)":[],\
-                                    "precipitation_probability":[]})
+                                    "air temp(F)":[]})
         else:
             return pd.DataFrame({"date": [day], "site":[site_name], "time_period":time_period, \
                                     "Overall Score": [statistics.mean(data_dict[f"{time_period}_list"])], \
@@ -196,8 +193,7 @@ class Location_info:
                                     "wave_period(s)":[statistics.mean(data_dict[f"{time_period}_wave_period_list"])],\
                                     "wind_speed(kn)":[statistics.mean(data_dict[f"{time_period}_wind_speed_list"])],\
                                     "wind_direction": [self.convert_num_dir_to_simple_string_dir(statistics.mean(data_dict[f"{time_period}_wind_direction_list"]))],\
-                                    "air temp(F)":[statistics.mean(data_dict[f"{time_period}_temp_list"])],\
-                                    "precipitation_probability":[statistics.mean(data_dict[f"{time_period}_precipitation_probability_list"])]})
+                                    "air temp(F)":[statistics.mean(data_dict[f"{time_period}_temp_list"])]})
 
     def append_new_data_am_pm_list(self, orginal_dict, time_period, new_data):
         appended_dict=orginal_dict
@@ -219,11 +215,10 @@ class Location_info:
         appended_dict[f"{time_period}_wind_speed_list"].append(new_data.wind_speed)
         appended_dict[f"{time_period}_wind_direction_list"].append(new_data.wind_direction)
         appended_dict[f"{time_period}_temp_list"].append(new_data.air_temperature)
-        appended_dict[f"{time_period}_precipitation_probability_list"].append(new_data.precipitation_probability)
 
         return appended_dict
-    
-    def update_hourly_land_data(self, initial_list):
+
+    def update_hourly_land_data(self, initial_list, latitude, longitude):
         modifiable_list=initial_list
         # Setup the Open-Meteo API client with cache and retry on error
         cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
@@ -234,17 +229,19 @@ class Location_info:
         # The order of variables in hourly or daily is important to assign them correctly below
         url = "https://api.open-meteo.com/v1/forecast"
         params = {
-            "latitude": self.latitude,
-            "longitude": self.longitude,
-            "hourly": ["temperature_2m", "wind_speed_10m", "precipitation_probability", "wind_direction_10m"],
+            "latitude": latitude,
+            "longitude": longitude,
+            "hourly": ["temperature_2m", "wind_speed_10m", "wind_direction_10m"],
             "timezone": self.timezone,
             "wind_speed_unit": "kn",
-            "temperature_unit": "fahrenheit"
+            "temperature_unit": "fahrenheit",
+            "models": "gfs_seamless"
         }
         responses = openmeteo.weather_api(url, params = params)
 
         # Process first location. Add a for-loop for multiple locations or weather models
         for response_index, response in enumerate(responses):
+            print("grabbing land data")
             print(f"Coordinates: {response.Latitude()}°N {response.Longitude()}°E")
             print(f"Elevation: {response.Elevation()} m asl")
             print(f"Timezone: {response.Timezone()}{response.TimezoneAbbreviation()}")
@@ -254,8 +251,7 @@ class Location_info:
             hourly = response.Hourly()
             hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()
             hourly_wind_speed_10m = hourly.Variables(1).ValuesAsNumpy()
-            hourly_precipitation_probability = hourly.Variables(2).ValuesAsNumpy()
-            hourly_wind_direction_10m = hourly.Variables(3).ValuesAsNumpy()
+            hourly_wind_direction_10m = hourly.Variables(2).ValuesAsNumpy()
 
             modifiable_list["air_temperature"] = hourly_temperature_2m
             modifiable_list["wind_speed"] = hourly_wind_speed_10m
@@ -263,12 +259,15 @@ class Location_info:
             for height in modifiable_list["wind_speed"]:
                 wind_speed_score.append(self.site_info_dicts[response_index].get_wind_speed_score(height))
             modifiable_list["wind_speed_score"] = wind_speed_score
-            modifiable_list["precipitation_probability"] = hourly_precipitation_probability
             modifiable_list["wind_direction"] = hourly_wind_direction_10m
             modifiable_list["wind_direction_str"] = [self.convert_num_dir_to_simple_string_dir(x) for x in modifiable_list["wind_direction"]]
             wind_direction_score=[]
             for direction in modifiable_list["wind_direction_str"]:
                 wind_direction_score.append(self.site_info_dicts[response_index].get_wind_dir_score(direction))
             modifiable_list["wind_direction_score"] = wind_direction_score
+            wave_direction_score=[]
+            for index, direction in enumerate(modifiable_list["wave_direction_str"]):
+                wave_direction_score.append(self.site_info_dicts[response_index].get_wave_direction_score(direction, modifiable_list["wind_direction_str"][index]))
+            modifiable_list["wave_direction_score"] = wave_direction_score
 
             return modifiable_list

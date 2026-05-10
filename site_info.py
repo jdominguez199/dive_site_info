@@ -128,19 +128,20 @@ class Site_Info:
             wave_height_score=1
         return wave_height_score
     
-    def get_wave_direction_score(self,wave_direction):
+    def get_wave_direction_score(self,wave_direction, wind_direction):
         '''
-        Get a score based on wave direction
+        Get a score based on wave direction based on if the wind and the wave are conflicting
 
         :param wave_direction: The wave direction to be checked
+        :param wind_direction: The direction of the wind uesd to check if waves are the opposite direction
         :type wave_direction: string
         :return: The score based on the wave direction
         '''
-        wave_direction_score=2 # score is direction is wrong
-        if(wave_direction in self.wave_direction["ideal"] ):
+        opposite_direction={"N":"S","NE":"SW", "E":"W", "SE":"NW", "S":"N", "SW":"NE", "W":"E", "NW":"SE"}
+        if(opposite_direction[wind_direction] == wave_direction):
+            wave_direction_score=2 # score is direction is wrong
+        else:
             wave_direction_score=0
-        elif(wave_direction in self.wave_direction["suboptimal"]):
-            wave_direction_score=1
         return wave_direction_score
     
     def get_wave_period_score(self,wave_period):
