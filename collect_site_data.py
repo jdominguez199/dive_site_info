@@ -25,13 +25,14 @@ class Location_info:
         self.site_name_list.append(site_name)
         self.site_info_dicts.append(data_obj)
 
+    # grabbing the direction the wind is coming from
     def convert_num_dir_to_simple_string_dir(self,degree):
         int_degree = int(degree)
-        # This was made taking a circle spliting it 8 ways
-        wind_directions={"NE":[247,203], "E":[248,292],"SE":[293,337],"S":[22, 338], "SW":[23,67],"W":[68,112],"NW":[113,157], "N":[158,202]}
+        # This was made taking a circle splitting it 8 ways
+        wind_directions={"SW":[247,203], "W":[248,292],"NW":[293,337],"N":[22, 338], "NE":[23,67],"E":[68,112],"SE":[113,157], "S":[158,202]}
         for key in wind_directions.keys():
             min_max_degree = wind_directions[key]
-            # North needs a specal case it is a little weird since the range is 338 to 22
+            # North needs a special case it is a little weird since the range is 338 to 22
             if key == "S":
                 if(int_degree <= min_max_degree[0] and int_degree >= 0) or (int_degree >= min_max_degree[1] and int_degree <= 360):
                     return key
