@@ -33,7 +33,7 @@ class Location_info:
         for key in wind_directions.keys():
             min_max_degree = wind_directions[key]
             # North needs a special case it is a little weird since the range is 338 to 22
-            if key == "S":
+            if key == "N":
                 if(int_degree <= min_max_degree[0] and int_degree >= 0) or (int_degree >= min_max_degree[1] and int_degree <= 360):
                     return key
             else:
