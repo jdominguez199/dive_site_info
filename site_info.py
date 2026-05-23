@@ -182,9 +182,9 @@ class Site_Info:
         :type wind_direction: string
         :return: The score based on the wind direction
         '''
-        wind_direction_score=2
+        wind_direction_score=5
         if(wind_direction in self.wind_direction["ideal"] ):
             wind_direction_score=0
         elif(wind_direction in self.wind_direction["suboptimal"]):
-            wind_direction_score=1
+            wind_direction_score=2
         return wind_direction_score
