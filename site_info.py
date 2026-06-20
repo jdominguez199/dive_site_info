@@ -11,13 +11,13 @@ class Site_Info:
     wind_speed={"light_starting_0":7, "moderate":16}
     def __init__(self, site_name, latitude, longitude):
         '''
-        Initial informtion to set up the object for the site
+        Initial information to set up the object for the site
 
         :param site_name: Name of the site
         :type site_name: string
-        :param latitude: Latitude coordiates of the site must be in the water
+        :param latitude: Latitude coordinates of the site must be in the water
         :type latitude: int
-        :param not_feasable: Longitude coordiates of the site must be in the water
+        :param not_feasable: Longitude coordinates of the site must be in the water
         :type not_feasable: int
         '''
         self.site_name=site_name
@@ -28,11 +28,11 @@ class Site_Info:
         '''
         Set the wave direction in this class
 
-        :param ideal: A comma seperated list of directions that are ideal
+        :param ideal: A comma separated list of directions that are ideal
         :type ideal: string
-        :param suboptimal: A comma seperated list of directions that are suboptimal
+        :param suboptimal: A comma separated list of directions that are suboptimal
         :type suboptimal: string
-        :param not_feasable: A comma seperated list of directions that are not_feasable
+        :param not_feasable: A comma separated list of directions that are not_feasable
         :type not_feasable: string
         '''
         self.wave_direction["ideal"]=self.str2list(ideal)
@@ -42,7 +42,7 @@ class Site_Info:
     def set_wave_height(self, calm_starting_0, moderate):
         '''
         Set the wave direction in this class. Anything above the moderate 
-        height is condered to high and will get the highest score
+        height is considered to high and will get the highest score
 
         :param calm_starting_0: Max height considered calm
         :type ideal: int
@@ -60,7 +60,7 @@ class Site_Info:
 
         :param choppy_starting_0: Max value for the period that is considered making the water choppy
         :type ideal: int
-        :param potential_discomfort: Max value for the period that is considered making the water a little uncomfertable
+        :param potential_discomfort: Max value for the period that is considered making the water a little uncomfortable
         :type potential_discomfort: int
         '''
         if(not choppy_starting_0==""):
@@ -72,11 +72,11 @@ class Site_Info:
         '''
         Set the wind direction for this site of what is considered  good to making this site not feasable
 
-        :param ideal: A comma seperated list of directions that are ideal
+        :param ideal: A comma separated list of directions that are ideal
         :type ideal: string
-        :param suboptimal: A comma seperated list of directions that are suboptimal
+        :param suboptimal: A comma separated list of directions that are suboptimal
         :type suboptimal: string
-        :param not_feasable: A comma seperated list of directions that are not_feasable
+        :param not_feasable: A comma separated list of directions that are not_feasible
         :type not_feasable: string
         '''
         self.wind_direction["ideal"]=self.str2list(ideal)
@@ -85,7 +85,7 @@ class Site_Info:
 
     def set_wind_speed(self, light_starting_0, moderate):
         '''
-        Set the wind speed for the wind being to strong or divable
+        Set the wind speed for the wind being to strong or divisible
 
         :param light_starting_0: Max wind speed for being considered light
         :type ideal: int
@@ -100,11 +100,11 @@ class Site_Info:
 
     def str2list(self, input_str):
         '''
-        Convert a comma seperated string into a list with spaces removed
+        Convert a comma separated string into a list with spaces removed
 
-        :param input_str: The string to be seperated
+        :param input_str: The string to be separated
         :type input_str: string
-        :return: A list of the value that were sperated by commas from the input string
+        :return: A list of the value that were separated by commas from the input string
         '''
         results_list=[]
         split_list=input_str.split(",")
@@ -122,9 +122,9 @@ class Site_Info:
         :return: The score based on the wave height
         '''
         wave_height_score=5 # Score it is not moderate or calm
-        if(self.wave_height["calm_starting_0"] <= wave_height):
+        if(self.wave_height["calm_starting_0"] >= wave_height):
             wave_height_score=0
-        elif(self.wave_height["moderate"] <= wave_height):
+        elif(self.wave_height["moderate"] >= wave_height):
             wave_height_score=1
         return wave_height_score
     
@@ -153,9 +153,9 @@ class Site_Info:
         :return: The score based on the wave period
         '''
         wave_period_score=0 # Score it is not choppy or profit discomfort
-        if(self.wave_period["choppy_starting_0"] <= wave_period):
+        if(self.wave_period["choppy_starting_0"] >= wave_period):
             wave_period_score=2
-        elif(self.wave_period["potential_discomfort"] <= wave_period):
+        elif(self.wave_period["potential_discomfort"] >= wave_period):
             wave_period_score=1
         return wave_period_score
     
@@ -168,9 +168,9 @@ class Site_Info:
         :return: The score based on the wave speed
         '''
         wind_speed_score=2 # Score it is not moderate or calm
-        if(self.wind_speed["light_starting_0"] <= wind_speed):
+        if(self.wind_speed["light_starting_0"] >= wind_speed):
             wind_speed_score=0
-        elif(self.wind_speed["moderate"] <= wind_speed):
+        elif(self.wind_speed["moderate"] >= wind_speed):
             wind_speed_score=1
         return wind_speed_score
     
